@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Search API</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .wrapper {
+        padding: 20px;
+        width: 60%;
+      }
+
+      .result {
+        padding: 10px 0;
+      }
+
+      .result > .container {
+        padding: 15px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="input-container">
+        Search video:
+        <input type="text" id="searchq" placeholder="Query here" /><button
+          id="submit"
+        >
+          Search
+        </button>
+      </div>
+      <div class="result"></div>
+    </div>
+
+    <!-- Just why? Today, JavaScript can do everything without add extra 60k into client -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+      const API = `YOUR_API_HERE`;
+      const ENDPOINT = `https://www.googleapis.com/youtube/v3`;
+
+      // Listen for click event
+      $("#submit").click(async () => {
+        // Get value from input box
+        const query = $("#searchq").val();
+
+        // Request data from API
+        $.ajax({
+          type: "get",
+          url: `${ENDPOINT}/search?part=id,snippet&q=${query}&key=${API}`,
+          success: res => {
+            const { items } = res;
+
+            items
+              .filter(item => item.id.kind === "youtube#video") // Filter only item typ youtube#video
+              .map(item => {
+                const { videoId } = item.id;
+                const { title, thumbnails } = item.snippet;
+
+                /**
+                 * Generate result as DOM element
+                 */
+                const containerDOM = document.createElement("div");
+                containerDOM.setAttribute("class", "container");
+
+                const titleDOM = document.createElement("div");
+                titleDOM.setAttribute("class", "title");
+                titleDOM.innerText = `Title: ${title}`;
+                containerDOM.appendChild(titleDOM);
+
+                const thumbDOM = document.createElement("div");
+                thumbDOM.setAttribute("class", "thuumb");
+                const imageDOM = document.createElement("img");
+                imageDOM.setAttribute("src", thumbnails.default.url);
+                thumbDOM.appendChild(imageDOM);
+                containerDOM.appendChild(thumbDOM);
+
+                const urlDOM = document.createElement("div");
+                urlDOM.setAttribute("class", "url");
+                urlDOM.innerText = "URL: ";
+                const hrefDOM = document.createElement("a");
+                hrefDOM.setAttribute(
+                  "href",
+                  `https://youtube.com/embed/${videoId}`
+                );
+                hrefDOM.innerText = `https://youtube.com/embed/${videoId}`;
+                urlDOM.appendChild(hrefDOM);
+                containerDOM.appendChild(urlDOM);
+
+                // Append as children
+                $(".result").append(containerDOM);
+              });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
